@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    ports:
+      - 32400:32400/tcp
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - PLEX_CLAIM=
+    volumes:
+      - ${CONF_PLEX}:/config
+      - ${MEDIA_PATH}:/tv
+      - ${VIDEO_PATH}:/movies
+    restart: unless-stopped
+    networks:
+      - my-network
+
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+    volumes:
+      - ${CONF_OVERSEERR}:/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+    networks:
+      - my-network
+
+  swag_container:
+    image: linuxserver/swag:latest
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - SUBDOMAINS=wildcard
+      - VALIDATION=duckdns
+      - URL=projet-ao.duckdns.org
+      - DUCKDNSTOKEN=4294f5ce-9569-4dc5-8447-fff63a14b103
+    volumes:
+      - ./swag/config/:/config
+    restart: unless-stopped
+    ports:
+      - 443:443
+    networks:
+      - my-network
+
+
+networks:
+  my-network:
+    external: true
+
